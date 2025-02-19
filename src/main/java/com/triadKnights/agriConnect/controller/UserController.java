@@ -6,7 +6,9 @@ import com.triadKnights.agriConnect.repository.UserRepository;
 import com.triadKnights.agriConnect.service.JwtService;
 import com.triadKnights.agriConnect.service.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -65,13 +67,13 @@ public class UserController {
 //    }
 
     @PostMapping("/loginForm")
-    public String login(@RequestParam String username, @RequestParam String password, Model model, HttpServletResponse response) {
+    public String login(@RequestParam String username, @RequestParam String password, Model model, HttpServletResponse response, HttpSession session) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
         if (authentication.isAuthenticated()) {
             String token = jwtService.generateToken(username);
-
+            session.setAttribute("loggedInUser", username);
             // Create a secure HTTP-only cookie for JWT
             Cookie jwtCookie = new Cookie("jwt", token);
             jwtCookie.setHttpOnly(true);  // Prevent access from JavaScript
@@ -99,20 +101,20 @@ public class UserController {
 //    }
 
     @GetMapping("/logout")
-    public String logout(HttpServletResponse response) {
-        // Create a cookie with the same name "jwt" and set its value to null,
-        // then set maxAge to 0 to remove it from the client.
+    public String logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+        // Invalidate the session
+        session.removeAttribute("loggedInUser");
+
+        // Clear the JWT cookie by setting its max age to 0
         Cookie jwtCookie = new Cookie("jwt", null);
-        jwtCookie.setPath("/");          // Ensure cookie path matches
-        jwtCookie.setHttpOnly(true);       // Not accessible via JavaScript
-        jwtCookie.setSecure(true);         // Should be set to true in HTTPS environments
-        jwtCookie.setMaxAge(0);            // Delete cookie immediately
+        jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(true);  // true if using HTTPS
+        jwtCookie.setMaxAge(0);     // Delete the cookie immediately
         response.addCookie(jwtCookie);
 
-        // Alternatively, you can use response.addHeader to ensure deletion:
-        // response.addHeader("Set-Cookie", "jwt=; Path=/; HttpOnly; Secure; Max-Age=0; SameSite=Strict");
-
-        return "redirect:/login";          // Redirect user to login page after logout
+        return "redirect:/login";   // Redirect to login page after logout
     }
+
 
 }
