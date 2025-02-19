@@ -19,7 +19,7 @@ public class User {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.FARMER;
 
     public User() {}
 

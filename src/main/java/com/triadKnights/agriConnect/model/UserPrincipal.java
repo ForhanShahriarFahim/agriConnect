@@ -10,18 +10,16 @@ import java.util.Collections;
 public class UserPrincipal implements UserDetails {
 
     private static final long serialVersionUID = 1L;
-
     private User user;
 
     public UserPrincipal(User user) {
-        this.user=user;
+        this.user = user;
     }
 
-    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().name()));
-    }
 
+        return Collections.singleton(new SimpleGrantedAuthority("ADMIN"));
+    }
 
     @Override
     public String getPassword() {

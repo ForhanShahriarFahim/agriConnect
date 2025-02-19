@@ -1,6 +1,5 @@
 package com.triadKnights.agriConnect.service;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,21 +23,26 @@ public class JwtService {
 
     private static final String SECRET = "TmV3U2VjcmV0S2V5Rm9ySldUU2lnbmluZ1B1cnBvc2VzMTIzNDU2Nzg=\r\n";
 
-    private String secretKey;
+//    private String secretKey;
+//
+//    public JwtService(){
+//        secretKey = generateSecretKey();
+//    }
 
-    public JwtService(){
-        secretKey = generateSecretKey();
-    }
+//    public String generateSecretKey() {
+//        try {
+//            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+//            SecretKey secretKey = keyGen.generateKey();
+//            System.out.println("Secret Key : " + secretKey.toString());
+//            return Base64.getEncoder().encodeToString(secretKey.getEncoded());
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new RuntimeException("Error generating secret key", e);
+//        }
+//    }
 
-    public String generateSecretKey() {
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey secretKey = keyGen.generateKey();
-            System.out.println("Secret Key : " + secretKey.toString());
-            return Base64.getEncoder().encodeToString(secretKey.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error generating secret key", e);
-        }
+    private Key getKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String username) {
@@ -54,11 +58,6 @@ public class JwtService {
 
     }
 
-    private Key getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
     public String extractUserName(String token) {
         // extract the username from jwt token
         return extractClaim(token, Claims::getSubject);
@@ -70,9 +69,7 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-
-
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(getKey())
                 .build().parseClaimsJws(token).getBody();
     }
